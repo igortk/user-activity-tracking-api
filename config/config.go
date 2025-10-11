@@ -11,6 +11,7 @@ type (
 	Config struct {
 		DataBaseConfig DataBaseConfig `envPrefix:"DB_"`
 		HttpConfig     HttpConfig     `envPrefix:"HTTP_"`
+		CronConfig     CronConfig     `envPrefix:"CRON_"`
 	}
 
 	DataBaseConfig struct {
@@ -19,6 +20,10 @@ type (
 
 	HttpConfig struct {
 		Port int `env:"PORT"  envDefault:"8080"`
+	}
+
+	CronConfig struct {
+		TabCountUsersEventTask string `env:"TAB_COUNT_USERS_EVENT_TASK"  envDefault:"* * * * *"`
 	}
 )
 
