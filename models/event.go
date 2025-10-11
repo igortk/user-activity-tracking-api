@@ -1,0 +1,23 @@
+package models
+
+import (
+	"encoding/json"
+	"time"
+)
+
+type Event struct {
+	UserID               int             `json:"user_id" validate:"required,gt=0"`
+	EventActionTimestamp time.Time       `json:"event_action_timestamp" validate:"required"`
+	Action               string          `json:"action" validate:"required,oneof=created updated deleted viewed"`
+	Metadata             json.RawMessage `json:"metadata" validate:"required"`
+}
+
+func (Event) TableName() string {
+	return "events"
+}
+
+type GetActivityEventByUserIdDateRangeRequest struct {
+	UserID                   int       `form:"user_id" validate:"required,gt=0"`
+	FromEventActionTimestamp time.Time `form:"from" validate:"required"`
+	ToEventActionTimestamp   time.Time `form:"to" validate:"required"`
+}
