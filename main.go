@@ -7,9 +7,9 @@ import (
 	"sync"
 	"syscall"
 	"user-activity-tracking-api/config"
-	"user-activity-tracking-api/service/cron"
+	"user-activity-tracking-api/cron"
+	"user-activity-tracking-api/rest"
 	"user-activity-tracking-api/service/database"
-	"user-activity-tracking-api/service/rest"
 )
 
 func main() {
@@ -20,7 +20,10 @@ func main() {
 	}
 
 	database.ConnectDB(&cfg.DataBaseConfig)
+	startServers(cfg)
+}
 
+func startServers(cfg *config.Config) {
 	var wg sync.WaitGroup
 
 	stopCh := make(chan struct{})

@@ -12,10 +12,6 @@ type Event struct {
 	Metadata             json.RawMessage `json:"metadata" validate:"required"`
 }
 
-func (Event) TableName() string {
-	return "events"
-}
-
 type GetActivityEventByUserIdDateRangeRequest struct {
 	UserID                   int       `form:"user_id" validate:"required,gt=0"`
 	FromEventActionTimestamp time.Time `form:"from" validate:"required"`

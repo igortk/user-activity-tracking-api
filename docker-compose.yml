@@ -1,0 +1,15 @@
+version: "3.8"
+
+services:
+  app:
+    container_name: user-activity-tracking-api
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+      - DB_URL=postgres://postgres:password@localhost:5432/UserActivityTracking?sslmode=disable
+      - HTTP_PORT=8080
+      - CRON_TAB_COUNT_USERS_EVENT_TASK=* * * * *
+    ports:
+      - "8080:8080"

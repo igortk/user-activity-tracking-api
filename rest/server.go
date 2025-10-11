@@ -9,23 +9,35 @@ import (
 	"sync"
 	"time"
 	"user-activity-tracking-api/config"
-	"user-activity-tracking-api/handlers"
-	"user-activity-tracking-api/middleware"
+	"user-activity-tracking-api/rest/handlers"
+	"user-activity-tracking-api/rest/middleware"
 )
 
 func Run(wg *sync.WaitGroup, httpCfg *config.HttpConfig, stopCh <-chan struct{}) {
 	defer wg.Done()
 
+	router := initRouter()
+	initApis(router)
+	serve(router, httpCfg, stopCh)
+}
+
+func initRouter() *gin.Engine {
 	router := gin.New()
 	router.Use(middleware.Logger())
 	router.Use(gin.Recovery())
 
+	return router
+}
+
+func initApis(router *gin.Engine) {
 	api := router.Group("/api")
 	{
 		api.POST("event", handlers.CreateActivityEvent)
 		api.GET("events", handlers.GetActivityEventByUserIdDateRange)
 	}
+}
 
+func serve(router *gin.Engine, httpCfg *config.HttpConfig, stopCh <-chan struct{}) {
 	server := &http.Server{
 		Addr:    fmt.Sprintf(":%d", httpCfg.Port),
 		Handler: router,

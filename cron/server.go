@@ -6,18 +6,15 @@ import (
 	"sync"
 	"time"
 	"user-activity-tracking-api/config"
+	"user-activity-tracking-api/cron/jobs"
 )
-
-func testTask() {
-	println("testTask testTask")
-}
 
 func Run(wg *sync.WaitGroup, cronCfg *config.CronConfig, stopCh <-chan struct{}) {
 	defer wg.Done()
 
 	s := gocron.NewScheduler(time.UTC)
 
-	_, err := s.Cron(cronCfg.TabCountUsersEventTask).Do(testTask)
+	_, err := s.Cron(cronCfg.TabCountUsersEventTask).Do(jobs.CalculateUserEventsAndSaveDb)
 	if err != nil {
 		log.Errorf("Failed to schedule cron testTask: %v", err)
 		return
