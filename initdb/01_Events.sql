@@ -6,3 +6,5 @@ CREATE TABLE events (
     metadata   JSONB NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+CREATE INDEX idx_events_user_time ON events(user_id, created_at);
