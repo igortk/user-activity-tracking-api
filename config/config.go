@@ -19,11 +19,19 @@ type (
 	}
 
 	HttpConfig struct {
-		Port int `env:"PORT"  envDefault:"8080"`
+		Port       int        `env:"PORT"  envDefault:"8080"`
+		CorsConfig CorsConfig `envPrefix:"CORS_"`
 	}
 
 	CronConfig struct {
-		TabCountUsersEventTask string `env:"TAB_COUNT_USERS_EVENT_TASK"  envDefault:"* * * * *"`
+		TabCountUsersEventTask string `env:"TAB_COUNT_USERS_EVENT_TASK" envDefault:"* * * * *"`
+	}
+
+	CorsConfig struct {
+		AllowedOrigins   string `env:"ALLOWED_ORIGINS" envDefault:"*"`
+		AllowMethods     string `env:"ALLOWED_METHODS" envDefault:"GET,POST"`
+		AllowHeaders     string `env:"ALLOWED_HEADERS" envDefault:"Content-Type"`
+		MaxAgeHoursCache int    `env:"MAX_AGE_HOURS_CACHE" envDefault:"12"`
 	}
 )
 

@@ -1,6 +1,22 @@
 version: "3.8"
 
 services:
+  db:
+    container_name: user-activity-tracking-api-db
+    image: postgres:16-alpine
+    restart: always
+    ports:
+      - "5434:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: UserActivityTracking
+      POSTGRES_HOST_AUTH_METHOD: trust
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./initdb/01_Events.sql:/docker-entrypoint-initdb.d/01_Events.sql
+      - ./initdb/02_UserEventCounts.sql:/docker-entrypoint-initdb.d/02_UserEventCounts.sql
+
   app:
     container_name: user-activity-tracking-api
     build:
@@ -8,8 +24,12 @@ services:
       dockerfile: Dockerfile
     restart: always
     environment:
-      - DB_URL=postgres://postgres:password@localhost:5432/UserActivityTracking?sslmode=disable
+      - DB_URL=postgres://postgres:password@db:5432/UserActivityTracking?sslmode=disable
       - HTTP_PORT=8080
-      - CRON_TAB_COUNT_USERS_EVENT_TASK=* * * * *
+      - CRON_TAB_COUNT_USERS_EVENT_TASK=0 */4 * * *
     ports:
       - "8080:8080"
+    depends_on:
+      - db
+volumes:
+  db_data:

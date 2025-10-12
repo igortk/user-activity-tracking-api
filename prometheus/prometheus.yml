@@ -1,0 +1,9 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'user-activity-tracking-api-prometheus'
+    static_configs:
+      #the same port on which the user-activity-tracking-api is running
+      #recomend set general server`s host like 192.168.123.12
+      - targets: ['localhost:8080']

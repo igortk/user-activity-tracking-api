@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
 	"net/http"
 	"sync"
@@ -16,13 +17,16 @@ import (
 func Run(wg *sync.WaitGroup, httpCfg *config.HttpConfig, stopCh <-chan struct{}) {
 	defer wg.Done()
 
-	router := initRouter()
+	router := initRouter(httpCfg)
 	initApis(router)
 	serve(router, httpCfg, stopCh)
 }
 
-func initRouter() *gin.Engine {
+func initRouter(cfg *config.HttpConfig) *gin.Engine {
 	router := gin.New()
+
+	router.Use(middleware.SetupCorsMiddleware(&cfg.CorsConfig))
+	router.Use(middleware.TrackMetrics())
 	router.Use(middleware.Logger())
 	router.Use(gin.Recovery())
 
@@ -30,6 +34,9 @@ func initRouter() *gin.Engine {
 }
 
 func initApis(router *gin.Engine) {
+	//api for grafana
+	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
+
 	api := router.Group("/api")
 	{
 		api.POST("event", handlers.CreateActivityEvent)
