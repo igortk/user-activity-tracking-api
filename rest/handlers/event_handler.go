@@ -7,6 +7,7 @@ import (
 	"user-activity-tracking-api/models"
 	"user-activity-tracking-api/service/database"
 	"user-activity-tracking-api/service/database/repositories"
+	"user-activity-tracking-api/utils"
 )
 
 var validate *validator.Validate
@@ -23,9 +24,8 @@ func CreateActivityEvent(ctx *gin.Context) {
 		return
 	}
 
-	if err := validate.Struct(event); err != nil {
-		validationErrors := err.(validator.ValidationErrors)
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Validation failed", "details": validationErrors.Error()})
+	if msg := utils.GenerateErrorMessage(event, validate); msg != "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Validation failed", "details": msg})
 		return
 	}
 
@@ -45,9 +45,8 @@ func GetActivityEventByUserIdDateRange(ctx *gin.Context) {
 		return
 	}
 
-	if err := validate.Struct(req); err != nil {
-		validationErrors := err.(validator.ValidationErrors)
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Validation failed", "details": validationErrors.Error()})
+	if msg := utils.GenerateErrorMessage(req, validate); msg != "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Validation failed", "details": msg})
 		return
 	}
 	var events []models.Event
