@@ -16,6 +16,7 @@ services:
       - db_data:/var/lib/postgresql/data
       - ./initdb/01_Events.sql:/docker-entrypoint-initdb.d/01_Events.sql
       - ./initdb/02_UserEventCounts.sql:/docker-entrypoint-initdb.d/02_UserEventCounts.sql
+      - ./initdb/03_BaseData.sql:/docker-entrypoint-initdb.d/03_BaseData.sql
 
   app:
     container_name: user-activity-tracking-api
@@ -27,6 +28,10 @@ services:
       - DB_URL=postgres://postgres:password@db:5432/UserActivityTracking?sslmode=disable
       - HTTP_PORT=8080
       - CRON_TAB_COUNT_USERS_EVENT_TASK=0 */4 * * *
+      - HTTP_CORS_ALLOWED_ORIGINS=*
+      - HTTP_CORS_ALLOWED_METHODS=GET,POST
+      - HTTP_CORS_ALLOWED_HEADERS=Content-Type
+      - HTTP_CORS_MAX_AGE_HOURS_CACHE=12
     ports:
       - "8080:8080"
     depends_on:
