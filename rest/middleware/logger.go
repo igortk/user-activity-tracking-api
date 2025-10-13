@@ -22,17 +22,13 @@ func Logger() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		start := time.Now()
 
-		log.Infof("--- Request Start ---")
-		log.Infof("Method: %s", c.Request.Method)
-		log.Infof("Path:  %s", c.Request.URL.Path)
-		log.Infof("Client IP:  %s", c.ClientIP())
-
 		var requestBody []byte
 		if c.Request.Body != nil {
 			var err error
 			requestBody, err = io.ReadAll(c.Request.Body)
 			if err == nil {
-				log.Infof("Request Body: %s", string(requestBody))
+				log.Infof("Request Start => Method: %s| Path:  %s| Client IP:  %s| Request Body: %s",
+					c.Request.Method, c.Request.URL.Path, c.ClientIP(), string(requestBody))
 			} else {
 				log.Errorf("Failed to read request body: %v", err)
 			}
@@ -48,10 +44,8 @@ func Logger() gin.HandlerFunc {
 
 		end := time.Now()
 		latency := end.Sub(start)
+		log.Infof("Request End => Client IP:  %s|Code: %d| Latency: %s| Response Body: %s",
+			c.ClientIP(), c.Writer.Status(), latency, blw.body.String())
 
-		log.Infof("Status Code: %d", c.Writer.Status())
-		log.Infof("Response Latency: %s", latency)
-		log.Infof("Response Body: %s", blw.body.String())
-		log.Infof("--- Request End ---")
 	}
 }
