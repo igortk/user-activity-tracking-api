@@ -1,6 +1,64 @@
 version: "3.8"
 
 services:
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - monitoring
+
+  loki:
+    image: grafana/loki:2.9.0
+    container_name: loki
+    volumes:
+      - ./monitoring/loki-config.yaml:/etc/loki/local-config.yaml
+      - ./monitoring/loki-data/index:/loki/index
+      - ./monitoring/loki-data/chunks:/loki/chunks
+      - ./monitoring/loki-data/compactor:/loki/compactor
+      - ./monitoring/loki-data/wal:/loki/wal
+    command: -config.file=/etc/loki/local-config.yaml
+    ports:
+      - "3100:3100"
+    restart: unless-stopped
+    networks:
+      - monitoring
+
+  promtail:
+    image: grafana/promtail:2.9.0
+    container_name: promtail
+    volumes:
+      - ./monitoring/promtail-config.yaml:/etc/promtail/config.yaml
+      - /var/log:/var/log
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /etc/machine-id:/etc/machine-id:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    command: -config.file=/etc/promtail/config.yaml
+    restart: unless-stopped
+    networks:
+      - monitoring
+
+  grafana:
+    image: grafana/grafana-oss:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+      - ./monitoring/grafana/provisioning/dashboards:/etc/grafana/dashboards
+    depends_on:
+      - prometheus
+      - loki
+    networks:
+      - monitoring
+
   db:
     container_name: user-activity-tracking-api-db
     image: postgres:16-alpine
@@ -17,9 +75,11 @@ services:
       - ./initdb/01_Events.sql:/docker-entrypoint-initdb.d/01_Events.sql
       - ./initdb/02_UserEventCounts.sql:/docker-entrypoint-initdb.d/02_UserEventCounts.sql
       - ./initdb/03_BaseData.sql:/docker-entrypoint-initdb.d/03_BaseData.sql
+    networks:
+      - monitoring
 
-  app:
-    container_name: user-activity-tracking-api
+  api:
+    container_name: api
     build:
       context: .
       dockerfile: Dockerfile
@@ -36,5 +96,12 @@ services:
       - "8080:8080"
     depends_on:
       - db
+    networks:
+      - monitoring
+
 volumes:
   db_data:
+
+networks:
+  monitoring:
+    driver: bridge

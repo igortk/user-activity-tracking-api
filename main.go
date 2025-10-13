@@ -15,12 +15,21 @@ import (
 func main() {
 	cfg, err := config.GetConfig()
 
+	initSetOutputLogs()
+
 	if err != nil {
 		log.Fatalf("Failed load configuration: %v", err)
 	}
 
 	database.ConnectDB(&cfg.DataBaseConfig)
 	startServers(cfg)
+}
+
+func initSetOutputLogs() {
+	log.SetFormatter(&log.TextFormatter{
+		FullTimestamp: true,
+	})
+	log.SetOutput(os.Stdout)
 }
 
 func startServers(cfg *config.Config) {
