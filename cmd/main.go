@@ -39,9 +39,8 @@ func startServers(ctx context.Context, cfg *config.Config, dbCl *database.Client
 
 	stopCh := make(chan struct{})
 
-	//var agr aggregators.UserEventsAggregator = aggregators.NewSQLUserEventsAggregator(dbCl.GetDb())
-	var agr aggregators.UserEventsAggregator
-	agr = aggregators.NewSQLUserEventsAggregator(dbCl.GetDb())
+	agr := aggregators.NewSQLUserEventsAggregator(dbCl.GetDb())
+
 	sigCh := make(chan os.Signal, 1)
 	signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM)
 
