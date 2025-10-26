@@ -12,19 +12,35 @@ import (
 	"user-activity-tracking-api/config"
 	"user-activity-tracking-api/rest/handlers"
 	"user-activity-tracking-api/rest/middleware"
+	"user-activity-tracking-api/service/database"
+	"user-activity-tracking-api/service/database/repositories"
 )
 
-func Run(wg *sync.WaitGroup, httpCfg *config.HttpConfig, stopCh <-chan struct{}) {
-	defer wg.Done()
+type Server struct {
+	httpCfg *config.HttpConfig
 
-	router := initRouter(httpCfg)
-	initApis(router)
-	serve(router, httpCfg, stopCh)
+	eventRepo *repositories.EventsRepository
 }
 
-func initRouter(cfg *config.HttpConfig) *gin.Engine {
+func NewServer(cfg *config.Config, dbCl *database.Client) *Server {
+	return &Server{
+		httpCfg:   &cfg.HttpConfig,
+		eventRepo: repositories.NewEventsRepository(dbCl.GetDb()),
+	}
+}
+
+func (s *Server) Run(wg *sync.WaitGroup, stopCh <-chan struct{}) {
+	defer wg.Done()
+
+	router := s.initRouter(s.httpCfg)
+	s.initApis(router)
+	s.serve(router, s.httpCfg, stopCh)
+}
+
+func (s *Server) initRouter(cfg *config.HttpConfig) *gin.Engine {
 	router := gin.New()
 
+	router.Use(middleware.MaxBodySize(1 << 20))
 	router.Use(middleware.SetupCorsMiddleware(&cfg.CorsConfig))
 	router.Use(middleware.TrackMetrics())
 	router.Use(middleware.Logger())
@@ -33,21 +49,25 @@ func initRouter(cfg *config.HttpConfig) *gin.Engine {
 	return router
 }
 
-func initApis(router *gin.Engine) {
+func (s *Server) initApis(router *gin.Engine) {
 	//api for grafana
 	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
 
 	api := router.Group("/api")
 	{
-		api.POST("event", handlers.CreateActivityEvent)
-		api.GET("events", handlers.GetActivityEventByUserIdDateRange)
+		api.POST("event", handlers.CreateActivityEvent(s.eventRepo))
+		api.GET("events", handlers.GetActivityEventByUserIdDateRange(s.eventRepo))
 	}
 }
 
-func serve(router *gin.Engine, httpCfg *config.HttpConfig, stopCh <-chan struct{}) {
+func (s *Server) serve(router *gin.Engine, httpCfg *config.HttpConfig, stopCh <-chan struct{}) {
 	server := &http.Server{
-		Addr:    fmt.Sprintf(":%d", httpCfg.Port),
-		Handler: router,
+		Addr:              fmt.Sprintf(":%d", httpCfg.Port),
+		Handler:           router,
+		ReadTimeout:       time.Duration(httpCfg.ReadTimeout) * time.Second,
+		ReadHeaderTimeout: time.Duration(httpCfg.ReadHeaderTimeout) * time.Second,
+		WriteTimeout:      time.Duration(httpCfg.WriteTimeout) * time.Second,
+		IdleTimeout:       time.Duration(httpCfg.IdleTimeout) * time.Second,
 	}
 
 	go func() {
