@@ -3,7 +3,7 @@ package aggregators
 import (
 	"context"
 	"time"
-	"user-activity-tracking-api/models"
+	"user-activity-tracking-api/internal/models"
 )
 
 type UserEventsAggregator interface {

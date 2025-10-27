@@ -1,4 +1,4 @@
-package config
+package configs
 
 import (
 	"errors"
@@ -47,10 +47,10 @@ type (
 )
 
 func GetConfig() (*Config, error) {
-	log.Info(fmt.Sprintf("Getting config..."))
+	log.Info(fmt.Sprintf("Getting configs..."))
 	var cfg Config
 	if err := env.Parse(&cfg); err != nil {
-		return nil, errors.New("can't parse config")
+		return nil, errors.New("can't parse configs")
 	}
 	return &cfg, nil
 }

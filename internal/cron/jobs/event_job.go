@@ -4,8 +4,8 @@ import (
 	"context"
 	log "github.com/sirupsen/logrus"
 	"time"
-	"user-activity-tracking-api/service/database/aggregators"
-	"user-activity-tracking-api/service/database/repositories"
+	"user-activity-tracking-api/internal/service/database/aggregators"
+	"user-activity-tracking-api/internal/service/database/repositories"
 )
 
 type CalculateUserEventsAndSaveDb struct {
