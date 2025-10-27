@@ -7,21 +7,26 @@ import (
 	"user-activity-tracking-api/internal/models"
 )
 
-type EventsRepository struct {
+type EventsRepository interface {
+	CreateEvent(ctx context.Context, event *models.Event) error
+	GetEventsByUserIdAndDateRange(ctx context.Context, userID, limit, offset int64, from, to time.Time) ([]models.Event, error)
+}
+
+type GormEventsRepository struct {
 	db *gorm.DB
 }
 
-func NewEventsRepository(db *gorm.DB) *EventsRepository {
-	return &EventsRepository{
+func NewEventsRepository(db *gorm.DB) *GormEventsRepository {
+	return &GormEventsRepository{
 		db: db,
 	}
 }
 
-func (r *EventsRepository) CreateEvent(ctx context.Context, event *models.Event) error {
+func (r *GormEventsRepository) CreateEvent(ctx context.Context, event *models.Event) error {
 	return r.db.WithContext(ctx).Create(event).Error
 }
 
-func (r *EventsRepository) GetEventsByUserIdAndDateRange(ctx context.Context, userID, limit, offset int64, from, to time.Time) ([]models.Event, error) {
+func (r *GormEventsRepository) GetEventsByUserIdAndDateRange(ctx context.Context, userID, limit, offset int64, from, to time.Time) ([]models.Event, error) {
 	var events []models.Event
 
 	result := r.db.WithContext(ctx).

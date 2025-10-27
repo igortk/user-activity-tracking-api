@@ -19,7 +19,7 @@ import (
 type Server struct {
 	httpCfg *configs.HttpConfig
 
-	eventRepo *repositories.EventsRepository
+	eventRepo repositories.EventsRepository
 }
 
 func NewServer(cfg *configs.Config, dbCl *database.Client) *Server {

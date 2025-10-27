@@ -18,7 +18,7 @@ func init() {
 	validate = validator.New()
 }
 
-func CreateActivityEvent(eventRepo *repositories.EventsRepository) gin.HandlerFunc {
+func CreateActivityEvent(eventRepo repositories.EventsRepository) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var event models2.Event
 
@@ -45,7 +45,7 @@ func CreateActivityEvent(eventRepo *repositories.EventsRepository) gin.HandlerFu
 	}
 }
 
-func GetActivityEventByUserIdDateRange(eventRepo *repositories.EventsRepository) gin.HandlerFunc {
+func GetActivityEventByUserIdDateRange(eventRepo repositories.EventsRepository) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var req models2.GetActivityEventByUserIdDateRangeRequest
 

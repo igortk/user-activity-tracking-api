@@ -55,11 +55,9 @@ func (s *Server) Run(wg *sync.WaitGroup, stopCh <-chan struct{}) {
 }
 
 func (s *Server) initCronTabs(ctx context.Context) {
-	f := jobs.NewCalculateUserEventsAndSaveDb(ctx, s.aggregator, s.userEventCountsRepo)
-	println(f)
 	s.cronTab = append(s.cronTab, Tab{
 		Schedule: s.cronCfg.Tab.TabCountUsersEventTask,
-		Job:      f,
+		Job:      jobs.NewCalculateUserEventsAndSaveDb(ctx, s.aggregator, s.userEventCountsRepo),
 	})
 }
 
