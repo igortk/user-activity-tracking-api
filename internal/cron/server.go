@@ -7,22 +7,22 @@ import (
 	"reflect"
 	"sync"
 	"time"
-	"user-activity-tracking-api/config"
-	"user-activity-tracking-api/cron/jobs"
-	"user-activity-tracking-api/service/database"
-	"user-activity-tracking-api/service/database/aggregators"
-	"user-activity-tracking-api/service/database/repositories"
+	"user-activity-tracking-api/internal/configs"
+	"user-activity-tracking-api/internal/cron/jobs"
+	"user-activity-tracking-api/internal/service/database"
+	"user-activity-tracking-api/internal/service/database/aggregators"
+	"user-activity-tracking-api/internal/service/database/repositories"
 )
 
 type Server struct {
-	cronCfg             *config.CronConfig
+	cronCfg             *configs.CronConfig
 	aggregator          aggregators.UserEventsAggregator
 	userEventCountsRepo *repositories.UserEventCountsRepository
 
 	cronTab []Tab
 }
 
-func NewServer(ctx context.Context, cfg *config.Config, agr aggregators.UserEventsAggregator, dbCl *database.Client) *Server {
+func NewServer(ctx context.Context, cfg *configs.Config, agr aggregators.UserEventsAggregator, dbCl *database.Client) *Server {
 	numCronTab := reflect.TypeOf(cfg.CronConfig.Tab).NumField()
 
 	srv := &Server{
@@ -56,7 +56,7 @@ func (s *Server) Run(wg *sync.WaitGroup, stopCh <-chan struct{}) {
 
 func (s *Server) initCronTabs(ctx context.Context) {
 	f := jobs.NewCalculateUserEventsAndSaveDb(ctx, s.aggregator, s.userEventCountsRepo)
-
+	println(f)
 	s.cronTab = append(s.cronTab, Tab{
 		Schedule: s.cronCfg.Tab.TabCountUsersEventTask,
 		Job:      f,
@@ -65,7 +65,7 @@ func (s *Server) initCronTabs(ctx context.Context) {
 
 func (s *Server) initCron(srv *gocron.Scheduler) {
 	for _, tab := range s.cronTab {
-		if _, err := srv.Cron(tab.Schedule).Do(tab.Job); err != nil {
+		if _, err := srv.Cron(tab.Schedule).Do(tab.Job.Run); err != nil {
 			log.Errorf("Failed to schedule cron testTask: %v", err)
 		}
 	}

@@ -7,15 +7,15 @@ import (
 	"os/signal"
 	"sync"
 	"syscall"
-	"user-activity-tracking-api/config"
-	"user-activity-tracking-api/cron"
-	"user-activity-tracking-api/rest"
-	"user-activity-tracking-api/service/database"
-	"user-activity-tracking-api/service/database/aggregators"
+	"user-activity-tracking-api/internal/configs"
+	"user-activity-tracking-api/internal/cron"
+	"user-activity-tracking-api/internal/rest"
+	"user-activity-tracking-api/internal/service/database"
+	"user-activity-tracking-api/internal/service/database/aggregators"
 )
 
 func main() {
-	cfg, err := config.GetConfig()
+	cfg, err := configs.GetConfig()
 
 	initSetOutputLogs()
 
@@ -34,7 +34,7 @@ func initSetOutputLogs() {
 	log.SetOutput(os.Stdout)
 }
 
-func startServers(ctx context.Context, cfg *config.Config, dbCl *database.Client) {
+func startServers(ctx context.Context, cfg *configs.Config, dbCl *database.Client) {
 	var wg sync.WaitGroup
 
 	stopCh := make(chan struct{})
@@ -62,15 +62,15 @@ func startServers(ctx context.Context, cfg *config.Config, dbCl *database.Client
 	wg.Wait()
 }
 
-func runRestServer(wg *sync.WaitGroup, cfg *config.Config, dbCl *database.Client, stopCh <-chan struct{}) {
+func runRestServer(wg *sync.WaitGroup, cfg *configs.Config, dbCl *database.Client, stopCh <-chan struct{}) {
 	srv := rest.NewServer(cfg, dbCl)
 
 	go srv.Run(wg, stopCh)
 }
 
 func runCronServer(ctx context.Context, wg *sync.WaitGroup, agr aggregators.UserEventsAggregator,
-	dbCl *database.Client, cfg *config.Config, stopCh <-chan struct{}) {
-	srv := cron.NewServer(ctx, cfg, agr, dbCl) //TODO agr
+	dbCl *database.Client, cfg *configs.Config, stopCh <-chan struct{}) {
+	srv := cron.NewServer(ctx, cfg, agr, dbCl)
 
 	go srv.Run(wg, stopCh)
 }

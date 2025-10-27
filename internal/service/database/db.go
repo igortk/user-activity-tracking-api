@@ -5,14 +5,14 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"time"
-	"user-activity-tracking-api/config"
+	"user-activity-tracking-api/internal/configs"
 )
 
 type Client struct {
 	db *gorm.DB
 }
 
-func NewClient(dbCfg *config.DataBaseConfig) *Client {
+func NewClient(dbCfg *configs.DataBaseConfig) *Client {
 	cl := &Client{}
 	cl.db = cl.connectDB(dbCfg)
 
@@ -28,7 +28,7 @@ func (c *Client) Close() {
 	db.Close()
 }
 
-func (c *Client) connectDB(dbCfg *config.DataBaseConfig) *gorm.DB {
+func (c *Client) connectDB(dbCfg *configs.DataBaseConfig) *gorm.DB {
 	db, err := gorm.Open(postgres.Open(dbCfg.Host), &gorm.Config{})
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)

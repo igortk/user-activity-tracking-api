@@ -7,9 +7,9 @@ import (
 	log "github.com/sirupsen/logrus"
 	"net/http"
 	"time"
-	"user-activity-tracking-api/models"
-	"user-activity-tracking-api/service/database/repositories"
-	"user-activity-tracking-api/utils"
+	models2 "user-activity-tracking-api/internal/models"
+	"user-activity-tracking-api/internal/service/database/repositories"
+	"user-activity-tracking-api/internal/utils"
 )
 
 var validate *validator.Validate
@@ -20,7 +20,7 @@ func init() {
 
 func CreateActivityEvent(eventRepo *repositories.EventsRepository) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		var event models.Event
+		var event models2.Event
 
 		if err := ctx.ShouldBindJSON(&event); err != nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
@@ -47,7 +47,7 @@ func CreateActivityEvent(eventRepo *repositories.EventsRepository) gin.HandlerFu
 
 func GetActivityEventByUserIdDateRange(eventRepo *repositories.EventsRepository) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		var req models.GetActivityEventByUserIdDateRangeRequest
+		var req models2.GetActivityEventByUserIdDateRangeRequest
 
 		if err := ctx.ShouldBindQuery(&req); err != nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -58,7 +58,7 @@ func GetActivityEventByUserIdDateRange(eventRepo *repositories.EventsRepository)
 			ctx.JSON(http.StatusBadRequest, gin.H{"error": "Validation failed", "details": msg})
 			return
 		}
-		var events []models.Event
+		var events []models2.Event
 
 		c, cancel := context.WithTimeout(ctx.Request.Context(), 60*time.Second)
 		defer cancel()

@@ -5,10 +5,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"strings"
 	"time"
-	"user-activity-tracking-api/config"
+	"user-activity-tracking-api/internal/configs"
 )
 
-func SetupCorsMiddleware(cfg *config.CorsConfig) gin.HandlerFunc {
+func SetupCorsMiddleware(cfg *configs.CorsConfig) gin.HandlerFunc {
 	corsConfig := cors.DefaultConfig()
 
 	if cfg == nil {

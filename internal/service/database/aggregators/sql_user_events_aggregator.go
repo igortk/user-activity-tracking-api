@@ -4,7 +4,7 @@ import (
 	"context"
 	"gorm.io/gorm"
 	"time"
-	"user-activity-tracking-api/models"
+	"user-activity-tracking-api/internal/models"
 )
 
 type SQLUserEventsAggregator struct {

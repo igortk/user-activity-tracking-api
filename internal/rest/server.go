@@ -9,20 +9,20 @@ import (
 	"net/http"
 	"sync"
 	"time"
-	"user-activity-tracking-api/config"
-	"user-activity-tracking-api/rest/handlers"
-	"user-activity-tracking-api/rest/middleware"
-	"user-activity-tracking-api/service/database"
-	"user-activity-tracking-api/service/database/repositories"
+	"user-activity-tracking-api/internal/configs"
+	"user-activity-tracking-api/internal/rest/handlers"
+	middleware2 "user-activity-tracking-api/internal/rest/middleware"
+	"user-activity-tracking-api/internal/service/database"
+	"user-activity-tracking-api/internal/service/database/repositories"
 )
 
 type Server struct {
-	httpCfg *config.HttpConfig
+	httpCfg *configs.HttpConfig
 
 	eventRepo *repositories.EventsRepository
 }
 
-func NewServer(cfg *config.Config, dbCl *database.Client) *Server {
+func NewServer(cfg *configs.Config, dbCl *database.Client) *Server {
 	return &Server{
 		httpCfg:   &cfg.HttpConfig,
 		eventRepo: repositories.NewEventsRepository(dbCl.GetDb()),
@@ -37,13 +37,13 @@ func (s *Server) Run(wg *sync.WaitGroup, stopCh <-chan struct{}) {
 	s.serve(router, s.httpCfg, stopCh)
 }
 
-func (s *Server) initRouter(cfg *config.HttpConfig) *gin.Engine {
+func (s *Server) initRouter(cfg *configs.HttpConfig) *gin.Engine {
 	router := gin.New()
 
-	router.Use(middleware.MaxBodySize(1 << 20))
-	router.Use(middleware.SetupCorsMiddleware(&cfg.CorsConfig))
-	router.Use(middleware.TrackMetrics())
-	router.Use(middleware.Logger())
+	router.Use(middleware2.MaxBodySize(1 << 20))
+	router.Use(middleware2.SetupCorsMiddleware(&cfg.CorsConfig))
+	router.Use(middleware2.TrackMetrics())
+	router.Use(middleware2.Logger())
 	router.Use(gin.Recovery())
 
 	return router
@@ -60,7 +60,7 @@ func (s *Server) initApis(router *gin.Engine) {
 	}
 }
 
-func (s *Server) serve(router *gin.Engine, httpCfg *config.HttpConfig, stopCh <-chan struct{}) {
+func (s *Server) serve(router *gin.Engine, httpCfg *configs.HttpConfig, stopCh <-chan struct{}) {
 	server := &http.Server{
 		Addr:              fmt.Sprintf(":%d", httpCfg.Port),
 		Handler:           router,
